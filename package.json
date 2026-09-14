@@ -1,0 +1,26 @@
+{
+  "name": "nexapact-protocol",
+  "version": "1.0.0",
+  "description": "NexaPact Protocol: Decentralized Agent Labor & Multi-Milestone Escrow on GenLayer",
+  "main": "frontend/client.ts",
+  "scripts": {
+    "test": "pytest tests/direct -v",
+    "serve": "npx serve frontend"
+  },
+  "keywords": [
+    "genlayer",
+    "intelligent-contract",
+    "agentic-commerce",
+    "escrow",
+    "reputation",
+    "ai-consensus"
+  ],
+  "author": "Lesnak1",
+  "license": "MIT",
+  "dependencies": {
+    "genlayer-js": "^0.2.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

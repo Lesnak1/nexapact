@@ -1,0 +1,4 @@
+rpc_url: "https://studio.genlayer.com/api"
+contract_path: "contracts/nexapact.py"
+class_name: "NexaPact"
+network: "studionet"
