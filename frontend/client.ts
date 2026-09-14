@@ -1,5 +1,7 @@
-import { createClient, createAccount, generatePrivateKey, type Address } from 'genlayer-js';
+import { createClient, createAccount, generatePrivateKey } from 'genlayer-js';
 import { testnetBradbury, studionet, localnet } from 'genlayer-js/chains';
+
+export type Address = `0x${string}`;
 
 /**
  * NexaPact Protocol GenLayer Client Integration
@@ -110,6 +112,7 @@ export async function addMilestone(
     address: contractAddress,
     functionName: 'add_milestone',
     args: [BigInt(agreementId), description, evidenceUrl, payoutWei],
+    value: 0n,
   });
 
   return txHash as `0x${string}`;
@@ -129,6 +132,7 @@ export async function submitAndAdjudicateMilestone(
     address: contractAddress,
     functionName: 'submit_and_adjudicate_milestone',
     args: [BigInt(agreementId), milestoneIdx, submissionNotes],
+    value: 0n,
   });
 
   return txHash as `0x${string}`;
@@ -146,6 +150,7 @@ export async function refundRemaining(
     address: contractAddress,
     functionName: 'refund_remaining',
     args: [BigInt(agreementId)],
+    value: 0n,
   });
 
   return txHash as `0x${string}`;
@@ -165,7 +170,7 @@ export async function getAgreement(
     args: [BigInt(agreementId)],
   });
 
-  return result as EscrowAgreementState;
+  return result as unknown as EscrowAgreementState;
 }
 
 /**
@@ -183,7 +188,7 @@ export async function getMilestone(
     args: [BigInt(agreementId), milestoneIdx],
   });
 
-  return result as MilestoneState;
+  return result as unknown as MilestoneState;
 }
 
 /**
@@ -200,5 +205,5 @@ export async function getAgentProfile(
     args: [agentAddress],
   });
 
-  return result as AgentProfileState;
+  return result as unknown as AgentProfileState;
 }
