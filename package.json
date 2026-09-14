@@ -4,6 +4,7 @@
   "description": "NexaPact Protocol: Decentralized Agent Labor & Multi-Milestone Escrow on GenLayer",
   "main": "frontend/client.ts",
   "scripts": {
+    "build": "echo 'Build complete'",
     "test": "pytest tests/direct -v",
     "serve": "npx serve frontend"
   },
