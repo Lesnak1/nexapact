@@ -506,8 +506,11 @@
                 <label class="form-label">Private Key (Optional)</label>
                 <input type="password" class="form-input" id="pkInput" placeholder="Auto-generated if empty">
             </div>
+            <button class="btn-action btn-secondary" id="btnMetaMask" style="height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                🦊 Connect MetaMask
+            </button>
             <button class="btn-action btn-secondary" id="reconnectBtn" style="height: 42px;">
-                🔄 Connect / Generate
+                🔄 Auto / Key
             </button>
         </div>
 
@@ -696,6 +699,35 @@
                 addLog(`Connected account: ${addr} on ${chain.name}`, 'ok');
             } catch (err) {
                 addLog(`Client initialization error: ${err.message}`, 'err');
+            }
+        }
+
+        async function connectMetaMask() {
+            try {
+                if (!window.ethereum) {
+                    addLog('MetaMask not detected in browser. Using ephemeral Web3 account.', 'warn');
+                    alert('MetaMask is not installed. You can continue using the auto-generated Web3 account or paste a private key.');
+                    return;
+                }
+                addLog('Requesting MetaMask accounts...', 'info');
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                if (!accounts || accounts.length === 0) {
+                    addLog('No account selected in MetaMask.', 'warn');
+                    return;
+                }
+                const chain = getSelectedChain();
+                currentAccount = accounts[0];
+                client = createClient({
+                    chain: chain,
+                    account: currentAccount,
+                    provider: window.ethereum,
+                });
+                const shortAddr = currentAccount.slice(0, 6) + '...' + currentAccount.slice(-4);
+                document.getElementById('accountBadge').innerText = shortAddr;
+                document.getElementById('netBadge').innerHTML = `<div class="pulse-dot"></div> ${chain.name}`;
+                addLog(`Connected MetaMask account: ${currentAccount} on ${chain.name}`, 'ok');
+            } catch (err) {
+                addLog(`MetaMask connection error: ${err.message}`, 'err');
             }
         }
 
@@ -913,6 +945,8 @@
         }
 
         document.getElementById('btnRefreshState').addEventListener('click', refreshContractState);
+        document.getElementById('btnMetaMask').addEventListener('click', connectMetaMask);
+        document.getElementById('accountBadge').addEventListener('click', connectMetaMask);
         document.getElementById('reconnectBtn').addEventListener('click', initClient);
         document.getElementById('networkSelect').addEventListener('change', initClient);
 
