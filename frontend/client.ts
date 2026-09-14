@@ -15,7 +15,7 @@ export type Address = `0x${string}`;
  * - get_agent_profile (Read-only view of contractor reputation score and task statistics)
  */
 
-export const DEFAULT_NEXAPACT_ADDRESS: Address = '0x9c2de957B18AEB3465a99ACC4E93ECf4A5eD5640';
+export const DEFAULT_NEXAPACT_ADDRESS: Address = '0xaC164931237F788A86Fad7712D5c900e00CF032A';
 
 export interface MilestoneState {
   description: string;
