@@ -156,12 +156,22 @@ def direct_deploy(direct_vm):
             write = WriteDecorator()
             view = ViewDecorator()
 
+        class StorageModule:
+            allow = staticmethod(lambda fn: fn)
+
+        StorageModule.TreeMap = TreeMap
+
+        class ContractModule:
+            Contract = object
+
         mock_gl.Address = Address
         mock_gl.u256 = u256
         mock_gl.u32 = u32
         mock_gl.TreeMap = TreeMap
         mock_gl.allow_storage = allow_storage
         mock_gl.Contract = object
+        mock_gl.storage = StorageModule
+        mock_gl.contract = ContractModule
         mock_gl.public = PublicDecorator()
         mock_gl.vm = VMModule()
         mock_gl.nondet = NonDetModule()

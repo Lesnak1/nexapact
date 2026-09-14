@@ -1,4 +1,4 @@
-# { "Depends": "py-genlayer:9b8kjyda2ycxyq4ea6g4yfpnydxhd52gqba5rb8dw7krkh5mn9p0" }
+# { "Depends": "py-genlayer:test" }
 """
 NexaPact Protocol: Decentralized Agent Labor & Multi-Milestone Escrow on GenLayer.
 
@@ -7,12 +7,13 @@ complex tasks. Milestone completion is adjudicated via decentralized multi-valid
 LLM consensus grounded on live web evidence (GitHub PRs, test reports, and API endpoints).
 """
 
+import genlayer as gl
 from genlayer import *
 from dataclasses import dataclass
 import json
 
 
-@allow_storage
+@gl.storage.allow
 @dataclass
 class Milestone:
     description: str
@@ -26,7 +27,7 @@ class Milestone:
     adjudication_summary: str
 
 
-@allow_storage
+@gl.storage.allow
 @dataclass
 class EscrowAgreement:
     client: Address
@@ -38,7 +39,7 @@ class EscrowAgreement:
     title: str
 
 
-@allow_storage
+@gl.storage.allow
 @dataclass
 class AgentProfile:
     reputation_score: u32
@@ -47,12 +48,12 @@ class AgentProfile:
     metadata_uri: str
 
 
-class NexaPact(gl.Contract):
+class NexaPact(gl.contract.Contract):
     """Decentralized Agent Labor & AI-Adjudicated Milestone Escrow on GenLayer."""
 
-    agreements: TreeMap[u256, EscrowAgreement]
-    milestones: TreeMap[str, Milestone]  # Key: f"{agreement_id}_{milestone_idx}"
-    agents: TreeMap[Address, AgentProfile]
+    agreements: gl.storage.TreeMap[u256, EscrowAgreement]
+    milestones: gl.storage.TreeMap[str, Milestone]  # Key: f"{agreement_id}_{milestone_idx}"
+    agents: gl.storage.TreeMap[Address, AgentProfile]
     agreement_counter: u256
 
     def __init__(self):
