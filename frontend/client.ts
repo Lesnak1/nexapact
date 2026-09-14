@@ -15,7 +15,7 @@ export type Address = `0x${string}`;
  * - get_agent_profile (Read-only view of contractor reputation score and task statistics)
  */
 
-export const DEFAULT_NEXAPACT_ADDRESS: Address = '0x94Ea875B891902A29A5ddBA3c74e9242C875fcdd';
+export const DEFAULT_NEXAPACT_ADDRESS: Address = '0x9c2de957B18AEB3465a99ACC4E93ECf4A5eD5640';
 
 export interface MilestoneState {
   description: string;
@@ -36,7 +36,6 @@ export interface EscrowAgreementState {
   remaining_balance: string;
   is_active: boolean;
   milestone_count: number;
-  title: string;
 }
 
 export interface AgentProfileState {
@@ -48,21 +47,21 @@ export interface AgentProfileState {
 
 export type SupportedChain = 'testnetBradbury' | 'studionet' | 'localnet';
 
-export function getChainConfig(chainType: SupportedChain = 'testnetBradbury') {
+export function getChainConfig(chainType: SupportedChain = 'studionet') {
   switch (chainType) {
-    case 'studionet':
-      return studionet;
+    case 'testnetBradbury':
+      return testnetBradbury;
     case 'localnet':
       return localnet;
-    case 'testnetBradbury':
+    case 'studionet':
     default:
-      return testnetBradbury;
+      return studionet;
   }
 }
 
 export function getGenLayerClient(
   privateKey?: `0x${string}`,
-  chainType: SupportedChain = 'testnetBradbury'
+  chainType: SupportedChain = 'studionet'
 ) {
   const account = privateKey ? createAccount(privateKey) : createAccount(generatePrivateKey());
   const chain = getChainConfig(chainType);
@@ -80,15 +79,14 @@ export async function createAgreement(
   client: ReturnType<typeof getGenLayerClient>,
   contractAddress: Address,
   contractorAddress: Address,
-  depositGenAmount: string | number,
-  title: string = 'Agent Labor Agreement'
+  depositGenAmount: string | number
 ): Promise<`0x${string}`> {
   const depositWei = BigInt(Math.floor(Number(depositGenAmount) * 1e18));
 
   const txHash = await client.writeContract({
     address: contractAddress,
     functionName: 'create_agreement',
-    args: [contractorAddress, title],
+    args: [contractorAddress],
     value: depositWei,
   });
 
