@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexaPact — Decentralized Agent Labor & Multi-Milestone Escrow on GenLayer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #080c14;
+            --bg-card: rgba(15, 23, 42, 0.85);
+            --bg-card-inner: rgba(0, 0, 0, 0.4);
+            --border-card: rgba(255, 255, 255, 0.08);
+            --border-highlight: rgba(0, 242, 254, 0.35);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --accent-cyan: #00f2fe;
+            --accent-blue: #4facfe;
+            --accent-purple: #8a2be2;
+            --accent-emerald: #00f5a0;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --font-sans: 'Plus Jakarta Sans', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px 60px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .ambient-bg {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1100px;
+            height: 650px;
+            background: radial-gradient(circle, rgba(0, 242, 254, 0.09) 0%, rgba(138, 43, 226, 0.06) 45%, transparent 70%);
+            filter: blur(110px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Navbar */
+        nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 20px;
+            backdrop-filter: blur(25px);
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ffffff 0%, var(--accent-cyan) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .network-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            background: rgba(0, 242, 254, 0.1);
+            border: 1px solid rgba(0, 242, 254, 0.25);
+            padding: 6px 14px;
+            border-radius: 999px;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent-cyan);
+            animation: pulse-anim 1.5s infinite;
+        }
+
+        @keyframes pulse-anim {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin: 5px 0 10px;
+        }
+
+        .hero h1 {
+            font-size: 40px;
+            font-weight: 800;
+            letter-spacing: -1.2px;
+            line-height: 1.15;
+            max-width: 860px;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 15px;
+            color: var(--text-dim);
+            max-width: 720px;
+            line-height: 1.6;
+        }
+
+        /* Config Card */
+        .config-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 18px;
+            padding: 16px 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            align-items: end;
+            backdrop-filter: blur(20px);
+        }
+
+        /* Main Grid */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 950px) {
+            .grid-layout { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 22px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            transition: border-color 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: var(--border-highlight);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-card);
+            padding-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 17px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Tabs */
+        .tabs-header {
+            display: flex;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.35);
+            padding: 4px;
+            border-radius: 12px;
+            border: 1px solid var(--border-card);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 8px 12px;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, rgba(0, 242, 254, 0.15), rgba(79, 172, 254, 0.15));
+            color: var(--accent-cyan);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+        }
+
+        .tab-pane {
+            display: none;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .tab-pane.active {
+            display: flex;
+        }
+
+        /* Form Inputs */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            background: var(--bg-card-inner);
+            border: 1px solid var(--border-card);
+            border-radius: 12px;
+            padding: 10px 14px;
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            font-size: 13px;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.25);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 70px;
+            font-family: var(--font-sans);
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            color: #080c14;
+            font-weight: 700;
+            font-size: 13px;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 16px rgba(0, 242, 254, 0.2);
+        }
+
+        .btn-action:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 22px rgba(0, 242, 254, 0.35);
+        }
+
+        .btn-action:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border: 1px solid var(--border-card);
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--text-dim);
+            box-shadow: none;
+        }
+
+        /* Score Matrix */
+        .score-matrix {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            background: var(--bg-card-inner);
+            padding: 14px;
+            border-radius: 16px;
+            border: 1px solid var(--border-card);
+        }
+
+        .score-box {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .score-value {
+            font-size: 26px;
+            font-weight: 800;
+            font-family: var(--font-mono);
+            color: var(--accent-cyan);
+        }
+
+        .score-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            letter-spacing: 0.5px;
+        }
+
+        /* Status Badge */
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-approved {
+            background: rgba(0, 245, 160, 0.12);
+            color: var(--accent-emerald);
+            border: 1px solid rgba(0, 245, 160, 0.3);
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.12);
+            color: var(--accent-amber);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .status-rejected {
+            background: rgba(244, 63, 94, 0.12);
+            color: var(--accent-rose);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+        }
+
+        /* Detail Box */
+        .info-panel {
+            background: var(--bg-card-inner);
+            border: 1px solid var(--border-card);
+            border-radius: 14px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            padding-bottom: 6px;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .info-k { color: var(--text-dim); }
+        .info-v { font-family: var(--font-mono); color: var(--text-main); font-weight: 600; }
+
+        /* Audit Log */
+        .audit-log {
+            background: var(--bg-card-inner);
+            border: 1px solid var(--border-card);
+            border-radius: 14px;
+            padding: 14px;
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            color: #cbd5e1;
+            max-height: 180px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .log-entry {
+            line-height: 1.4;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            padding-bottom: 3px;
+            word-break: break-all;
+        }
+
+        .log-time { color: var(--text-dim); }
+        .log-ok { color: var(--accent-emerald); }
+        .log-info { color: var(--accent-cyan); }
+        .log-warn { color: var(--accent-amber); }
+        .log-err { color: var(--accent-rose); }
+    </style>
+</head>
+<body>
+    <div class="ambient-bg"></div>
+
+    <div class="container">
+        <!-- Navbar -->
+        <nav>
+            <div class="brand-logo">
+                <svg width="28" height="28" viewBox="0 0 98 92" fill="none">
+                    <polygon fill="#00F2FE" points="44.26,32.35 27.72,67.12 43.29,74.9 0,91.93 44.26,0 44.26,32.35"/>
+                    <polygon fill="#8A2BE2" points="53.5,32.35 70.04,67.12 54.47,74.9 97.76,91.93 53.5,0 53.5,32.35"/>
+                    <polygon fill="#00F5A0" points="48.64,43.78 58.33,62.94 48.64,67.69 39.47,62.92 48.64,43.78"/>
+                </svg>
+                NexaPact
+            </div>
+            <div class="nav-controls">
+                <div class="network-badge" id="netBadge">
+                    <div class="pulse-dot"></div>
+                    GenLayer Bradbury (4221)
+                </div>
+                <div class="status-pill status-approved" id="accountBadge" style="font-family: var(--font-mono); font-size: 11px;">
+                    0x...
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Header -->
+        <div class="hero">
+            <h1>Verifiable AI-Adjudicated <span>Agent Escrow</span></h1>
+            <p>Trustless milestone payouts resolved via multi-validator neural consensus grounded on live GitHub PRs, CI test suites, and web evidence.</p>
+        </div>
+
+        <!-- Connection & Configuration Bar -->
+        <div class="config-bar">
+            <div class="form-group">
+                <label class="form-label">Network & RPC</label>
+                <select class="form-select" id="networkSelect">
+                    <option value="studionet" selected>GenLayer StudioNet (4222)</option>
+                    <option value="testnetBradbury">GenLayer Bradbury Testnet (4221)</option>
+                    <option value="localnet">Local GenVM Node</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Contract Address</label>
+                <input type="text" class="form-input" id="contractAddressInput" value="0x9c2de957B18AEB3465a99ACC4E93ECf4A5eD5640">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Private Key (Optional)</label>
+                <input type="password" class="form-input" id="pkInput" placeholder="Auto-generated if empty">
+            </div>
+            <button class="btn-action btn-secondary" id="btnMetaMask" style="height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                🦊 Connect MetaMask
+            </button>
+            <button class="btn-action btn-secondary" id="reconnectBtn" style="height: 42px;">
+                🔄 Auto / Key
+            </button>
+        </div>
+
+        <!-- Main Dashboard Grid -->
+        <div class="grid-layout">
+            
+            <!-- Left Card: Escrow Lifecycle Workflows -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">⚙️ Contract Operations</div>
+                    <span class="status-pill status-pending" id="opStatusPill">Ready</span>
+                </div>
+
+                <!-- Tabs Header -->
+                <div class="tabs-header">
+                    <button class="tab-btn active" onclick="switchTab('tab-create')">1. Create Agreement</button>
+                    <button class="tab-btn" onclick="switchTab('tab-milestone')">2. Add Milestone</button>
+                    <button class="tab-btn" onclick="switchTab('tab-adjudicate')">3. Submit & Settle</button>
+                </div>
+
+                <!-- Tab 1: Create Agreement -->
+                <div class="tab-pane active" id="tab-create">
+                    <div class="form-group">
+                        <label class="form-label">Contractor Address</label>
+                        <input type="text" class="form-input" id="createContractorAddr" value="0x71C67Ed3855aa521789B19C917309995168A4e38">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Escrow Deposit (GEN)</label>
+                        <input type="number" step="0.01" class="form-input" id="createDepositAmount" value="50.0">
+                    </div>
+                    <button class="btn-action" id="btnCreateAgreement">
+                        🔒 Lock Funds & Create Agreement
+                    </button>
+                </div>
+
+                <!-- Tab 2: Add Milestone (The missing call!) -->
+                <div class="tab-pane" id="tab-milestone">
+                    <div class="form-group">
+                        <label class="form-label">Agreement ID</label>
+                        <input type="number" class="form-input" id="mAgreementId" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Milestone Specification</label>
+                        <textarea class="form-textarea" id="mSpec">Implement permit expiration validation in SDK core decrypt pipeline with 100% unit test coverage.</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Evidence URL (GitHub PR / CI Endpoint)</label>
+                        <input type="text" class="form-input" id="mEvidenceUrl" value="https://api.github.com/repos/sample/sdk/pulls/123">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Milestone Payout (GEN)</label>
+                        <input type="number" step="0.01" class="form-input" id="mPayout" value="25.0">
+                    </div>
+                    <button class="btn-action" id="btnAddMilestone">
+                        🚩 Define & Add Milestone Gate
+                    </button>
+                </div>
+
+                <!-- Tab 3: Submit & Adjudicate -->
+                <div class="tab-pane" id="tab-adjudicate">
+                    <div class="form-group">
+                        <label class="form-label">Agreement ID & Milestone Index</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <input type="number" class="form-input" id="adjAgreementId" value="0" placeholder="Agreement ID">
+                            <input type="number" class="form-input" id="adjMilestoneIdx" value="0" placeholder="Milestone Index">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contractor Submission Notes</label>
+                        <textarea class="form-textarea" id="adjNotes">PR submitted with full permit validation test suite passing on CI, 0 lint errors.</textarea>
+                    </div>
+                    <button class="btn-action" id="btnAdjudicate">
+                        ⚖️ Trigger Multi-Validator AI Adjudication
+                    </button>
+                    <button class="btn-action btn-secondary" id="btnRefund" style="margin-top: 4px;">
+                        ↩️ Refund Remaining Balance
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Card: Live Contract State & Consensus Verdict -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">⚖️ Live GenLayer Contract State</div>
+                    <button class="btn-action btn-secondary" id="btnRefreshState" style="padding: 6px 12px; font-size: 12px;">
+                        🔄 Fetch State
+                    </button>
+                </div>
+
+                <!-- Multi-Axis Score Matrix -->
+                <div class="score-matrix">
+                    <div class="score-box">
+                        <span class="score-value" id="dispFuncScore">--</span>
+                        <span class="score-label">Functional</span>
+                    </div>
+                    <div class="score-box">
+                        <span class="score-value" id="dispCritScore">--</span>
+                        <span class="score-label">Criteria</span>
+                    </div>
+                    <div class="score-box">
+                        <span class="score-value" id="dispQualScore">--</span>
+                        <span class="score-label">Quality</span>
+                    </div>
+                </div>
+
+                <!-- Live State Details -->
+                <div class="info-panel">
+                    <div class="info-row">
+                        <span class="info-k">Milestone Status:</span>
+                        <span class="status-pill status-pending" id="dispMilestoneStatus">AWAITING QUERY</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-k">Defect Severity:</span>
+                        <span class="info-v" id="dispDefectSeverity">--</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-k">Locked Escrow Balance:</span>
+                        <span class="info-v" id="dispLockedBal">-- GEN</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-k">Remaining Escrow Balance:</span>
+                        <span class="info-v" id="dispRemBal" style="color: var(--accent-emerald);">-- GEN</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-k">Latest Transaction:</span>
+                        <span class="info-v" id="dispLatestTx" style="font-size: 11px;">None</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">On-Chain Consensus Adjudication Summary</label>
+                    <textarea class="form-textarea" id="dispSummary" readonly style="min-height: 55px;">Querying contract storage on GenLayer...</textarea>
+                </div>
+
+                <!-- Live Audit Stream -->
+                <div class="audit-log" id="auditLog">
+                    <div class="log-entry"><span class="log-time">[System]</span> Initializing GenLayer client...</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- GenLayer Client Script Integration -->
+    <script type="module">
+        import { createClient, createAccount, generatePrivateKey } from 'https://esm.sh/genlayer-js@1.2.0';
+        import { testnetBradbury, studionet, localnet } from 'https://esm.sh/genlayer-js@1.2.0/chains';
+
+        let client = null;
+        let currentAccount = null;
+
+        function addLog(msg, type = 'info') {
+            const log = document.getElementById('auditLog');
+            const div = document.createElement('div');
+            div.className = 'log-entry';
+            const time = new Date().toLocaleTimeString();
+            div.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-${type}">${msg}</span>`;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function getSelectedChain() {
+            const val = document.getElementById('networkSelect').value;
+            if (val === 'studionet') return studionet;
+            if (val === 'localnet') return localnet;
+            return testnetBradbury;
+        }
+
+        function initClient() {
+            try {
+                const chain = getSelectedChain();
+                const pkInput = document.getElementById('pkInput').value.trim();
+                const pk = pkInput ? (pkInput.startsWith('0x') ? pkInput : '0x' + pkInput) : generatePrivateKey();
+                
+                currentAccount = createAccount(pk);
+                client = createClient({
+                    chain: chain,
+                    account: currentAccount,
+                });
+
+                const addr = currentAccount.address;
+                const shortAddr = addr.slice(0, 6) + '...' + addr.slice(-4);
+                document.getElementById('accountBadge').innerText = shortAddr;
+                document.getElementById('netBadge').innerHTML = `<div class="pulse-dot"></div> ${chain.name}`;
+
+                addLog(`Connected account: ${addr} on ${chain.name}`, 'ok');
+            } catch (err) {
+                addLog(`Client initialization error: ${err.message}`, 'err');
+            }
+        }
+
+        async function connectMetaMask() {
+            try {
+                if (!window.ethereum) {
+                    addLog('MetaMask not detected in browser. Using ephemeral Web3 account.', 'warn');
+                    alert('MetaMask is not installed. You can continue using the auto-generated Web3 account or paste a private key.');
+                    return;
+                }
+                addLog('Requesting MetaMask accounts...', 'info');
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                if (!accounts || accounts.length === 0) {
+                    addLog('No account selected in MetaMask.', 'warn');
+                    return;
+                }
+                const chain = getSelectedChain();
+                currentAccount = accounts[0];
+                client = createClient({
+                    chain: chain,
+                    account: currentAccount,
+                    provider: window.ethereum,
+                });
+                const shortAddr = currentAccount.slice(0, 6) + '...' + currentAccount.slice(-4);
+                document.getElementById('accountBadge').innerText = shortAddr;
+                document.getElementById('netBadge').innerHTML = `<div class="pulse-dot"></div> ${chain.name}`;
+                addLog(`Connected MetaMask account: ${currentAccount} on ${chain.name}`, 'ok');
+            } catch (err) {
+                addLog(`MetaMask connection error: ${err.message}`, 'err');
+            }
+        }
+
+        // Tab Switching
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        };
+
+        // 1. Create Agreement
+        document.getElementById('btnCreateAgreement').addEventListener('click', async () => {
+            const btn = document.getElementById('btnCreateAgreement');
+            try {
+                btn.disabled = true;
+                btn.innerText = '⏳ Submitting create_agreement...';
+
+                const contractAddr = document.getElementById('contractAddressInput').value.trim();
+                const contractor = document.getElementById('createContractorAddr').value.trim();
+                const depositGen = parseFloat(document.getElementById('createDepositAmount').value);
+                const depositWei = BigInt(Math.floor(depositGen * 1e18));
+
+                addLog(`Calling create_agreement with contractor=${contractor}, deposit=${depositGen} GEN...`, 'info');
+
+                const txHash = await client.writeContract({
+                    address: contractAddr,
+                    functionName: 'create_agreement',
+                    args: [contractor],
+                    value: depositWei,
+                });
+
+                addLog(`Tx Submitted: ${txHash}`, 'ok');
+                updateTxDisplay(txHash);
+
+                addLog('Waiting for transaction finality on GenLayer...', 'info');
+                const receipt = await client.waitForTransactionReceipt({ hash: txHash });
+                addLog(`Agreement created successfully! Block receipt confirmed.`, 'ok');
+
+                await refreshContractState();
+            } catch (err) {
+                addLog(`Create Agreement Error: ${err.message}`, 'err');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = '🔒 Lock Funds & Create Agreement';
+            }
+        });
+
+        // 2. Add Milestone (The missing call!)
+        document.getElementById('btnAddMilestone').addEventListener('click', async () => {
+            const btn = document.getElementById('btnAddMilestone');
+            try {
+                btn.disabled = true;
+                btn.innerText = '⏳ Submitting add_milestone...';
+
+                const contractAddr = document.getElementById('contractAddressInput').value.trim();
+                const agreementId = BigInt(document.getElementById('mAgreementId').value);
+                const spec = document.getElementById('mSpec').value.trim();
+                const evidenceUrl = document.getElementById('mEvidenceUrl').value.trim();
+                const payoutGen = parseFloat(document.getElementById('mPayout').value);
+                const payoutWei = BigInt(Math.floor(payoutGen * 1e18));
+
+                addLog(`Calling add_milestone for Agreement #${agreementId} with payout=${payoutGen} GEN...`, 'info');
+
+                const txHash = await client.writeContract({
+                    address: contractAddr,
+                    functionName: 'add_milestone',
+                    args: [agreementId, spec, evidenceUrl, payoutWei],
+                });
+
+                addLog(`Milestone Tx: ${txHash}`, 'ok');
+                updateTxDisplay(txHash);
+
+                addLog('Waiting for transaction finality...', 'info');
+                await client.waitForTransactionReceipt({ hash: txHash });
+                addLog(`Milestone registered on-chain for Agreement #${agreementId}!`, 'ok');
+
+                await refreshContractState();
+            } catch (err) {
+                addLog(`Add Milestone Error: ${err.message}`, 'err');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = '🚩 Define & Add Milestone Gate';
+            }
+        });
+
+        // 3. Submit & Adjudicate
+        document.getElementById('btnAdjudicate').addEventListener('click', async () => {
+            const btn = document.getElementById('btnAdjudicate');
+            try {
+                btn.disabled = true;
+                btn.innerText = '⏳ Running Multi-Validator Neural Consensus...';
+
+                const contractAddr = document.getElementById('contractAddressInput').value.trim();
+                const agreementId = BigInt(document.getElementById('adjAgreementId').value);
+                const milestoneIdx = parseInt(document.getElementById('adjMilestoneIdx').value);
+                const notes = document.getElementById('adjNotes').value.trim();
+
+                addLog(`Triggering AI Adjudication for Agreement #${agreementId}, Milestone #${milestoneIdx}...`, 'info');
+                addLog(`Validators fetching live evidence and evaluating multi-axis equivalence...`, 'info');
+
+                const txHash = await client.writeContract({
+                    address: contractAddr,
+                    functionName: 'submit_and_adjudicate_milestone',
+                    args: [agreementId, milestoneIdx, notes],
+                });
+
+                addLog(`Adjudication Tx Submitted: ${txHash}`, 'ok');
+                updateTxDisplay(txHash);
+
+                addLog('Polling for validator consensus finality...', 'info');
+                await client.waitForTransactionReceipt({ hash: txHash });
+                addLog('Consensus reached and verdict recorded on-chain!', 'ok');
+
+                await refreshContractState();
+            } catch (err) {
+                addLog(`Adjudication Error: ${err.message}`, 'err');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = '⚖️ Trigger Multi-Validator AI Adjudication';
+            }
+        });
+
+        // 4. Refund Remaining
+        document.getElementById('btnRefund').addEventListener('click', async () => {
+            const btn = document.getElementById('btnRefund');
+            try {
+                btn.disabled = true;
+                btn.innerText = '⏳ Processing refund...';
+
+                const contractAddr = document.getElementById('contractAddressInput').value.trim();
+                const agreementId = BigInt(document.getElementById('adjAgreementId').value);
+
+                addLog(`Calling refund_remaining for Agreement #${agreementId}...`, 'info');
+
+                const txHash = await client.writeContract({
+                    address: contractAddr,
+                    functionName: 'refund_remaining',
+                    args: [agreementId],
+                });
+
+                addLog(`Refund Tx: ${txHash}`, 'ok');
+                updateTxDisplay(txHash);
+
+                await client.waitForTransactionReceipt({ hash: txHash });
+                addLog(`Refund processed for Agreement #${agreementId}!`, 'ok');
+
+                await refreshContractState();
+            } catch (err) {
+                addLog(`Refund Error: ${err.message}`, 'err');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = '↩️ Refund Remaining Balance';
+            }
+        });
+
+        // 5. Query Real Contract State (Replaces hardcoded displays)
+        async function refreshContractState() {
+            try {
+                const contractAddr = document.getElementById('contractAddressInput').value.trim();
+                const agreementId = BigInt(document.getElementById('adjAgreementId').value);
+                const milestoneIdx = parseInt(document.getElementById('adjMilestoneIdx').value);
+
+                addLog(`Querying get_agreement(${agreementId}) and get_milestone(${agreementId}, ${milestoneIdx})...`, 'info');
+
+                const agData = await client.readContract({
+                    address: contractAddr,
+                    functionName: 'get_agreement',
+                    args: [agreementId],
+                });
+
+                if (agData) {
+                    const lockedGen = (Number(agData.total_locked) / 1e18).toFixed(2);
+                    const remGen = (Number(agData.remaining_balance) / 1e18).toFixed(2);
+                    document.getElementById('dispLockedBal').innerText = `${lockedGen} GEN`;
+                    document.getElementById('dispRemBal').innerText = `${remGen} GEN`;
+                }
+
+                const mData = await client.readContract({
+                    address: contractAddr,
+                    functionName: 'get_milestone',
+                    args: [agreementId, milestoneIdx],
+                });
+
+                if (mData) {
+                    document.getElementById('dispFuncScore').innerText = mData.score_functional ?? 0;
+                    document.getElementById('dispCritScore').innerText = mData.score_criteria ?? 0;
+                    document.getElementById('dispQualScore').innerText = mData.score_quality ?? 0;
+                    document.getElementById('dispDefectSeverity').innerText = mData.defect_severity || 'NONE';
+                    document.getElementById('dispSummary').value = mData.adjudication_summary || 'No adjudication summary recorded.';
+
+                    const statusPill = document.getElementById('dispMilestoneStatus');
+                    statusPill.innerText = mData.status;
+                    if (mData.status === 'APPROVED') {
+                        statusPill.className = 'status-pill status-approved';
+                    } else if (mData.status === 'REVISION_REQUIRED') {
+                        statusPill.className = 'status-pill status-rejected';
+                    } else {
+                        statusPill.className = 'status-pill status-pending';
+                    }
+
+                    addLog(`Contract State Fetched: Status=${mData.status}, Scores=${mData.score_functional}/${mData.score_criteria}/${mData.score_quality}`, 'ok');
+                }
+            } catch (err) {
+                addLog(`Read Contract State: ${err.message}`, 'warn');
+            }
+        }
+
+        function updateTxDisplay(hash) {
+            const shortHash = hash.slice(0, 10) + '...' + hash.slice(-8);
+            const chain = getSelectedChain();
+            const explorerUrl = chain.blockExplorers?.default?.url ? `${chain.blockExplorers.default.url}tx/${hash}` : `https://explorer-bradbury.genlayer.com/tx/${hash}`;
+            document.getElementById('dispLatestTx').innerHTML = `<a href="${explorerUrl}" target="_blank" style="color: var(--accent-cyan); text-decoration: none;">${shortHash} ↗</a>`;
+        }
+
+        document.getElementById('btnRefreshState').addEventListener('click', refreshContractState);
+        document.getElementById('btnMetaMask').addEventListener('click', connectMetaMask);
+        document.getElementById('accountBadge').addEventListener('click', connectMetaMask);
+        document.getElementById('reconnectBtn').addEventListener('click', initClient);
+        document.getElementById('networkSelect').addEventListener('change', initClient);
+
+        // Auto initialize on load
+        initClient();
+    </script>
+</body>
+</html>
