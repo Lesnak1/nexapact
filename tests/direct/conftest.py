@@ -1,5 +1,6 @@
 import json
 import re
+from typing import Any
 import pytest
 
 
@@ -91,7 +92,7 @@ def direct_deploy(direct_vm):
         import sys
         import types
 
-        mock_gl = types.ModuleType("genlayer")
+        mock_gl: Any = types.ModuleType("genlayer")
 
         class Address(str):
             def __new__(cls, val):
@@ -166,7 +167,7 @@ def direct_deploy(direct_vm):
         class StorageModule:
             allow = staticmethod(lambda fn: fn)
 
-        StorageModule.TreeMap = TreeMap
+        setattr(StorageModule, "TreeMap", TreeMap)
 
         class ContractModule:
             Contract = object
@@ -190,6 +191,7 @@ def direct_deploy(direct_vm):
         sys.modules["genlayer"] = mock_gl
 
         spec = importlib.util.spec_from_file_location("contract_mod", contract_path)
+        assert spec is not None and spec.loader is not None
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
 

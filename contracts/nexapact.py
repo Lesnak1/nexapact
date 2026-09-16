@@ -71,7 +71,7 @@ class NexaPact(gl.contract.Contract):
             raise gl.vm.UserError("Client and contractor cannot be the same address.")
 
         agreement_id = self.agreement_counter
-        self.agreement_counter = self.agreement_counter + u256(1)
+        self.agreement_counter = u256(self.agreement_counter + 1)
 
         self.agreements[agreement_id] = EscrowAgreement(
             client=gl.message.sender_address,

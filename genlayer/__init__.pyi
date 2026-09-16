@@ -11,12 +11,26 @@ class Address(str):
 
 class u256(int):
     def __init__(self, val: int | str = 0) -> None: ...
+    def __add__(self, other: Any) -> 'u256': ...
+    def __sub__(self, other: Any) -> 'u256': ...
+    def __mul__(self, other: Any) -> 'u256': ...
+    def __floordiv__(self, other: Any) -> 'u256': ...
 
 class u32(int):
     def __init__(self, val: int | str = 0) -> None: ...
+    def __add__(self, other: Any) -> 'u32': ...
+    def __sub__(self, other: Any) -> 'u32': ...
 
-class TreeMap(dict, Generic[K, V]):
+class TreeMap(dict[K, V], Generic[K, V]):
     pass
+
+class StorageModule:
+    @staticmethod
+    def allow(target: T) -> T: ...
+    class TreeMap(dict[K, V], Generic[K, V]): ...
+
+class ContractModule:
+    class Contract: ...
 
 class NonDetModule:
     class web:
@@ -28,7 +42,7 @@ class NonDetModule:
 class VMModule:
     class UserError(Exception): ...
     @staticmethod
-    def run_nondet_unsafe(leader_fn: Callable[[], Any], validator_fn: Callable[[Any, Any], bool]) -> Any: ...
+    def run_nondet_unsafe(leader_fn: Callable[[], Any], validator_fn: Callable[[Any], bool]) -> Any: ...
 
 class MessageProxy:
     sender_address: Address
@@ -43,8 +57,22 @@ class PublicDecorator:
     write: WriteDecorator
     view: ViewDecorator
 
+# Module-level definitions
+Contract = ContractModule.Contract
+storage = StorageModule
+contract = ContractModule
+vm: VMModule
+nondet: NonDetModule
+message: MessageProxy
+public: PublicDecorator
+current_address: Address
+
+def emit_transfer(to: Address, amount: u256) -> None: ...
+
 class gl:
-    class Contract: ...
+    Contract = ContractModule.Contract
+    storage = StorageModule
+    contract = ContractModule
     vm: VMModule
     nondet: NonDetModule
     message: MessageProxy
@@ -52,6 +80,3 @@ class gl:
     public: PublicDecorator
     @staticmethod
     def emit_transfer(to: Address, amount: u256) -> None: ...
-
-def emit_transfer(to: Address, amount: u256) -> None: ...
-current_address: Address
