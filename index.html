@@ -527,9 +527,10 @@
 
                 <!-- Tabs Header -->
                 <div class="tabs-header">
-                    <button class="tab-btn active" onclick="switchTab('tab-create')">1. Create Agreement</button>
-                    <button class="tab-btn" onclick="switchTab('tab-milestone')">2. Add Milestone</button>
-                    <button class="tab-btn" onclick="switchTab('tab-adjudicate')">3. Submit & Settle</button>
+                    <button class="tab-btn active" onclick="switchTab('tab-create')">1. Create</button>
+                    <button class="tab-btn" onclick="switchTab('tab-milestone')">2. Milestone</button>
+                    <button class="tab-btn" onclick="switchTab('tab-adjudicate')">3. Settle</button>
+                    <button class="tab-btn" onclick="switchTab('tab-agent')" style="color: var(--accent-cyan);">🤖 4. Agent A2A</button>
                 </div>
 
                 <!-- Tab 1: Create Agreement -->
@@ -589,6 +590,61 @@
                     <button class="btn-action btn-secondary" id="btnRefund" style="margin-top: 4px;">
                         ↩️ Refund Remaining Balance
                     </button>
+                </div>
+
+                <!-- Tab 4: Autonomous Agent Interface (A2A Pipeline) -->
+                <div class="tab-pane" id="tab-agent">
+                    <div style="background: rgba(0, 242, 254, 0.05); border: 1px solid rgba(0, 242, 254, 0.2); border-radius: 12px; padding: 12px; font-size: 13px;">
+                        <div style="font-weight: 700; color: var(--accent-cyan); display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                            🤖 Autonomous Agent-to-Agent (A2A) Execution Pipeline
+                        </div>
+                        <div style="color: var(--text-dim); font-size: 12px; line-height: 1.4;">
+                            NexaPact is built as programmatic infrastructure for autonomous AI agents (ERC-8004 / LangChain / AutoGPT / ElizaOS) to contract, execute, and settle without human mediation.
+                        </div>
+                    </div>
+
+                    <!-- Interactive Simulation Runner -->
+                    <div class="form-group">
+                        <label class="form-label">Interactive Agent Simulation</label>
+                        <button class="btn-action" id="btnSimulateAgent" style="background: linear-gradient(135deg, #8A2BE2, #00F2FE);">
+                            ⚡ Run Autonomous Agent Simulation Cycle
+                        </button>
+                    </div>
+
+                    <div id="agentSimStatus" style="display: none; background: var(--bg-card-inner); border: 1px solid var(--border-card); border-radius: 12px; padding: 12px; font-size: 12px; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 700; color: var(--text-main);">Simulation Progress:</span>
+                            <span class="status-pill status-pending" id="simStepPill">Step 1/4</span>
+                        </div>
+                        <div id="simLog" style="font-family: var(--font-mono); color: var(--accent-cyan); line-height: 1.5;"></div>
+                    </div>
+
+                    <!-- Agent Settings -->
+                    <div class="form-group">
+                        <label class="form-label">Agent Guardrail Settings</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <div>
+                                <span style="font-size: 11px; color: var(--text-dim);">Min. Contractor Rep:</span>
+                                <input type="number" class="form-input" id="agentMinRep" value="75" style="padding: 6px 10px; font-size: 12px;">
+                            </div>
+                            <div>
+                                <span style="font-size: 11px; color: var(--text-dim);">Equivalence Bound:</span>
+                                <input type="text" class="form-input" id="agentEquivBound" value="±8 points" readonly style="padding: 6px 10px; font-size: 12px; opacity: 0.8;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Machine Code Snippet -->
+                    <div class="form-group">
+                        <label class="form-label">Machine-to-Machine Integration (Python SDK)</label>
+                        <pre style="background: rgba(0, 0, 0, 0.5); border: 1px solid var(--border-card); border-radius: 10px; padding: 10px; font-family: var(--font-mono); font-size: 11px; color: #a5b4fc; overflow-x: auto; margin: 0;"># Autonomous Worker Agent Auto-Submit
+client = GenLayerClient(rpc="https://studio-next.genlayer.com/api", chain_id=61997)
+receipt = client.call(
+    contract="0xaC164931237F788A86Fad7712D5c900e00CF032A",
+    method="submit_and_adjudicate_milestone",
+    args=[0, 0, "PR #123 delivered with 100% tests passing"]
+)</pre>
+                    </div>
                 </div>
             </div>
 
@@ -689,6 +745,16 @@
             log.appendChild(div);
             log.scrollTop = log.scrollHeight;
         }
+
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+            const targetPane = document.getElementById(tabId);
+            if (targetPane) targetPane.classList.add('active');
+            const btns = Array.from(document.querySelectorAll('.tab-btn'));
+            const activeBtn = btns.find(b => b.getAttribute('onclick')?.includes(tabId));
+            if (activeBtn) activeBtn.classList.add('active');
+        };
 
         function getSelectedChain() {
             const val = document.getElementById('networkSelect').value;
@@ -990,6 +1056,61 @@
             const explorerUrl = `${cleanBase}tx/${hash}`;
             document.getElementById('dispLatestTx').innerHTML = `<a href="${explorerUrl}" target="_blank" style="color: var(--accent-cyan); text-decoration: none;">${shortHash} ↗</a>`;
         }
+
+        // 5. Autonomous Agent Simulator (A2A Pipeline Demo)
+        document.getElementById('btnSimulateAgent')?.addEventListener('click', async () => {
+            const btn = document.getElementById('btnSimulateAgent');
+            const simStatus = document.getElementById('agentSimStatus');
+            const simPill = document.getElementById('simStepPill');
+            const simLog = document.getElementById('simLog');
+
+            try {
+                btn.disabled = true;
+                btn.innerText = '⚡ Autonomous Loop Running...';
+                simStatus.style.display = 'flex';
+
+                // Step 1
+                simPill.className = 'status-pill status-pending';
+                simPill.innerText = 'Step 1/4: Task Definition';
+                simLog.innerHTML = '🤖 <b>Client Agent (0x9A3f...B401)</b> creates Agreement #0 with 50.0 GEN locked in GenLayer escrow.';
+                addLog('🤖 [A2A] Client Agent initialized Agreement #0 with 50.0 GEN deposit on GenLayer.', 'info');
+                await new Promise(r => setTimeout(r, 800));
+
+                // Step 2
+                simPill.innerText = 'Step 2/4: Task Execution & PR';
+                simLog.innerHTML += '<br>🛠️ <b>Contractor Agent (0x71C6...4e38)</b> delivers milestone & posts evidence: <code>https://github.com/sample/sdk/pull/123</code>';
+                addLog('🛠️ [A2A] Contractor Agent submitted milestone evidence with passing test suite.', 'info');
+                await new Promise(r => setTimeout(r, 900));
+
+                // Step 3
+                simPill.innerText = 'Step 3/4: Multi-Validator Neural Consensus';
+                simLog.innerHTML += '<br>⚖️ <b>GenLayer Validators</b> fetch live PR, evaluate multi-axis rubric, and check Equivalence Principle (±8 pt bound)...';
+                addLog('⚖️ [GenVM] Validators independently executed gl.nondet.web.get and neural scoring prompt.', 'info');
+                await new Promise(r => setTimeout(r, 1000));
+
+                // Update right card scores
+                document.getElementById('dispFuncScore').innerText = '96';
+                document.getElementById('dispCritScore').innerText = '94';
+                document.getElementById('dispQualScore').innerText = '92';
+                document.getElementById('dispDefectSeverity').innerText = 'NONE';
+                document.getElementById('dispSummary').value = 'Automated Agent Adjudication: Live PR evidence verified. All 8 tests passing, zero lint warnings, strict equivalence agreement across all independent validators under ±8 pt tolerance.';
+
+                const statusPill = document.getElementById('dispMilestoneStatus');
+                statusPill.innerText = 'APPROVED';
+                statusPill.className = 'status-pill status-approved';
+
+                // Step 4
+                simPill.innerText = 'Step 4/4: Settlement & Reputation';
+                simPill.className = 'status-pill status-approved';
+                simLog.innerHTML += '<br>🎉 <b>VERDICT: APPROVED!</b> Released 25.0 GEN payout to Contractor Agent. Contractor reputation increased to 95 (+15).';
+                addLog('🎉 [A2A Settlement] 25.0 GEN released. Contractor reputation boosted to 95 (+15). A2A lifecycle complete!', 'ok');
+            } catch (err) {
+                addLog(`Simulation Error: ${err.message}`, 'err');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = '⚡ Run Autonomous Agent Simulation Cycle';
+            }
+        });
 
         document.getElementById('btnRefreshState').addEventListener('click', refreshContractState);
         document.getElementById('btnMetaMask').addEventListener('click', connectMetaMask);
