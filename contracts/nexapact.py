@@ -250,18 +250,21 @@ class NexaPact(gl.contract.Contract):
                 "summary": summary,
             }
 
-        def validator_comparator(leader_res: dict, validator_res: dict) -> bool:
-            """Equivalence Principle: Ensure consensus across multi-axis evaluations."""
-            # 1. Defect severity must be in equivalent danger tier
+        def validator_comparator(leader_res: dict) -> bool:
+            """Equivalence Principle: Validator independently re-runs adjudication and enforces consensus."""
+            # 1. Validator independently executes the adjudication pipeline
+            validator_res = run_adjudication_pipeline()
+
+            # 2. Defect severity must be in equivalent danger tier
             critical_tiers = ["HIGH", "CRITICAL"]
-            lead_is_crit = leader_res["defect_severity"] in critical_tiers
-            val_is_crit = validator_res["defect_severity"] in critical_tiers
+            lead_is_crit = leader_res.get("defect_severity") in critical_tiers
+            val_is_crit = validator_res.get("defect_severity") in critical_tiers
             if lead_is_crit != val_is_crit:
                 return False
 
-            # 2. Tolerances on numerical scores (within 8 points)
+            # 3. Tolerances on numerical scores (within 8 points)
             for axis in ["functional", "criteria", "quality"]:
-                diff = abs(leader_res[axis] - validator_res[axis])
+                diff = abs(int(leader_res.get(axis, 0)) - int(validator_res.get(axis, 0)))
                 if diff > 8:
                     return False
 

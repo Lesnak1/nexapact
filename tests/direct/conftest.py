@@ -32,12 +32,16 @@ class MockDirectVM:
         self.block_timestamp = 1770000000
         self.web_mocks = []
         self.llm_mocks = []
+        self.llm_queue = []
 
     def mock_web(self, pattern: str, response: str):
         self.web_mocks.append((re.compile(pattern), response))
 
     def mock_llm(self, pattern: str, response: str):
         self.llm_mocks.append((re.compile(pattern), response))
+
+    def queue_llm_response(self, response: str):
+        self.llm_queue.append(response)
 
     def get_web(self, url: str):
         for pat, resp in reversed(self.web_mocks):
@@ -47,6 +51,8 @@ class MockDirectVM:
         return "MOCK EVIDENCE: Pull Request #42 merged with 100% tests passing."
 
     def exec_prompt(self, prompt: str):
+        if self.llm_queue:
+            return self.llm_queue.pop(0)
         for pat, resp in reversed(self.llm_mocks):
             if pat.search(prompt):
                 return resp
@@ -109,8 +115,9 @@ def direct_deploy(direct_vm):
             @staticmethod
             def run_nondet_unsafe(leader_fn, validator_fn):
                 lead_res = leader_fn()
-                # Run validator equivalence
-                if not validator_fn(lead_res, lead_res):
+                # Real GenVM invokes validator_fn with a single leader result argument.
+                # validator_fn independently re-runs the pipeline and performs equivalence check.
+                if not validator_fn(lead_res):
                     raise UserError("Validator equivalence check failed.")
                 return lead_res
 

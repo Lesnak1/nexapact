@@ -164,3 +164,107 @@ def test_milestone_allocation_overflow_reverts(direct_vm, direct_deploy, direct_
     # Attempting to allocate 300 more when only 200 left -> must revert
     with direct_vm.expect_revert("exceed locked deposit"):
         nexapact.add_milestone(ag_id, "Milestone 2", "https://m2.com", 300)
+
+
+def test_validator_equivalence_consensus_within_tolerance(direct_vm, direct_deploy, direct_alice, direct_bob):
+    """Test multi-validator consensus where leader and validator evaluate independently within ±8 pt tolerance."""
+    direct_vm.sender = direct_alice
+    direct_vm.value = 500
+
+    nexapact = direct_deploy(CONTRACT_PATH)
+    ag_id = nexapact.create_agreement(direct_bob, "Consensus Verification Task")
+    nexapact.add_milestone(ag_id, "Core Engine", "https://github.com/org/repo/pull/10", 500)
+
+    direct_vm.sender = direct_bob
+    direct_vm.mock_web("github.com/org/repo/pull/10", "All tests pass, clean build.")
+
+    # Queue distinct leader and validator responses
+    # 1st call (Leader): functional=90, criteria=92, quality=88
+    direct_vm.queue_llm_response(json.dumps({
+        "functional": 90,
+        "criteria": 92,
+        "quality": 88,
+        "defect_severity": "NONE",
+        "summary": "Leader: Deliverable meets all acceptance criteria."
+    }))
+    # 2nd call (Independent Validator re-run): functional=85, criteria=95, quality=82 (all diffs <= 8)
+    direct_vm.queue_llm_response(json.dumps({
+        "functional": 85,
+        "criteria": 95,
+        "quality": 82,
+        "defect_severity": "NONE",
+        "summary": "Validator: Independently re-verified, within equivalence tolerance."
+    }))
+
+    res = nexapact.submit_and_adjudicate_milestone(ag_id, 0, "Submitted for validator consensus.")
+    assert "APPROVED" in res
+
+    m_info = nexapact.get_milestone(ag_id, 0)
+    assert m_info["status"] == "APPROVED"
+    assert m_info["score_functional"] == 90  # Leader's agreed result recorded
+    assert m_info["score_criteria"] == 92
+
+
+def test_validator_equivalence_failure_on_score_divergence(direct_vm, direct_deploy, direct_alice, direct_bob):
+    """Test that validator rejects adjudication when score divergence exceeds ±8 pt Equivalence Principle tolerance."""
+    direct_vm.sender = direct_alice
+    direct_vm.value = 500
+
+    nexapact = direct_deploy(CONTRACT_PATH)
+    ag_id = nexapact.create_agreement(direct_bob, "Score Divergence Task")
+    nexapact.add_milestone(ag_id, "Module X", "https://github.com/org/repo/pull/11", 500)
+
+    direct_vm.sender = direct_bob
+    direct_vm.mock_web("github.com/org/repo/pull/11", "Borderline implementation.")
+
+    # Leader awards 90 functional, Validator only awards 75 (|90-75| = 15 > 8 tolerance)
+    direct_vm.queue_llm_response(json.dumps({
+        "functional": 90,
+        "criteria": 90,
+        "quality": 90,
+        "defect_severity": "NONE",
+        "summary": "Leader: Looks acceptable."
+    }))
+    direct_vm.queue_llm_response(json.dumps({
+        "functional": 75,
+        "criteria": 90,
+        "quality": 90,
+        "defect_severity": "NONE",
+        "summary": "Validator: Functional divergence too high."
+    }))
+
+    with direct_vm.expect_revert("Validator equivalence check failed"):
+        nexapact.submit_and_adjudicate_milestone(ag_id, 0, "Submitted.")
+
+
+def test_validator_equivalence_failure_on_defect_severity_mismatch(direct_vm, direct_deploy, direct_alice, direct_bob):
+    """Test that validator rejects adjudication when leader and validator disagree on critical defect tier."""
+    direct_vm.sender = direct_alice
+    direct_vm.value = 500
+
+    nexapact = direct_deploy(CONTRACT_PATH)
+    ag_id = nexapact.create_agreement(direct_bob, "Defect Severity Task")
+    nexapact.add_milestone(ag_id, "Module Y", "https://github.com/org/repo/pull/12", 500)
+
+    direct_vm.sender = direct_bob
+    direct_vm.mock_web("github.com/org/repo/pull/12", "Code with vulnerability.")
+
+    # Leader claims NONE, Validator detects CRITICAL
+    direct_vm.queue_llm_response(json.dumps({
+        "functional": 90,
+        "criteria": 90,
+        "quality": 90,
+        "defect_severity": "NONE",
+        "summary": "Leader: Ignored flaw."
+    }))
+    direct_vm.queue_llm_response(json.dumps({
+        "functional": 90,
+        "criteria": 90,
+        "quality": 90,
+        "defect_severity": "CRITICAL",
+        "summary": "Validator: Found critical defect."
+    }))
+
+    with direct_vm.expect_revert("Validator equivalence check failed"):
+        nexapact.submit_and_adjudicate_milestone(ag_id, 0, "Submitted.")
+

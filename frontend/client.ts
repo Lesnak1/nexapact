@@ -45,23 +45,43 @@ export interface AgentProfileState {
   metadata_uri: string;
 }
 
-export type SupportedChain = 'testnetBradbury' | 'studionet' | 'localnet';
+export const studioNext = {
+  ...studionet,
+  id: 61997,
+  name: 'GenLayer Studio Next (61997)',
+  rpcUrls: {
+    default: {
+      http: ['https://rpc-studio-next.genlayer.com', 'https://studio-next.genlayer.com/api'],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: 'GenLayer Studio Next Explorer',
+      url: 'https://explorer-studio-dev.genlayer.com',
+    },
+  },
+};
 
-export function getChainConfig(chainType: SupportedChain = 'studionet') {
+export type SupportedChain = 'studioNext' | 'studionet' | 'testnetBradbury' | 'localnet';
+
+export function getChainConfig(chainType: SupportedChain = 'studioNext') {
   switch (chainType) {
+    case 'studioNext':
+      return studioNext;
     case 'testnetBradbury':
       return testnetBradbury;
     case 'localnet':
       return localnet;
     case 'studionet':
-    default:
       return studionet;
+    default:
+      return studioNext;
   }
 }
 
 export function getGenLayerClient(
   privateKey?: `0x${string}`,
-  chainType: SupportedChain = 'studionet'
+  chainType: SupportedChain = 'studioNext'
 ) {
   const account = privateKey ? createAccount(privateKey) : createAccount(generatePrivateKey());
   const chain = getChainConfig(chainType);

@@ -3,8 +3,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![GenLayer Network](https://img.shields.io/badge/GenLayer-Intelligent%20Contract-00f2fe.svg)](https://docs.genlayer.com)
 [![GenVM Python](https://img.shields.io/badge/GenVM-py--genlayer%20v0.2.7-8a2be2.svg)](https://github.com/genlayerlabs)
-[![Tests: Passing](https://img.shields.io/badge/Tests-5%2F5%20Passing%20(Direct%20VM)-00f5a0.svg)](#-test-suite--verification)
+[![Tests: Passing](https://img.shields.io/badge/Tests-8%2F8%20Passing%20(Direct%20VM)-00f5a0.svg)](#-test-suite--verification)
 [![Hackathon: Agent Tank](https://img.shields.io/badge/GenLayer-Agent%20Tank%202026-8a2be2.svg)](https://portal.genlayer.foundation/agent-tank/hackathon)
+[![Deployment: Studio Next](https://img.shields.io/badge/GenLayer%20Studio%20Next-Chain%2061997-blueviolet.svg)](https://explorer-studio-dev.genlayer.com)
 
 **NexaPact Protocol** is the decentralized labor, reputation, and progressive escrow layer for the emerging autonomous agent economy. Built natively on **GenLayer Intelligent Contracts**, NexaPact enables trustless milestone-based agreements between autonomous AI agents and human specialists where **deliverable completion is adjudicated via multi-validator neural consensus grounded on live web evidence** (GitHub PRs, test suites, and live API endpoints).
 
@@ -126,26 +127,30 @@ pytest tests/direct -v
 Expected Output:
 ```text
 ============================= test session starts =============================
-collected 5 items
+collected 8 items
 
 tests/direct/test_nexapact.py::test_agreement_lifecycle_and_adjudication PASSED
 tests/direct/test_nexapact.py::test_milestone_rejection_on_defective_work PASSED
 tests/direct/test_nexapact.py::test_refund_unclaimed_funds PASSED
 tests/direct/test_nexapact.py::test_unauthorized_access_reverts PASSED
 tests/direct/test_nexapact.py::test_milestone_allocation_overflow_reverts PASSED
+tests/direct/test_nexapact.py::test_validator_equivalence_consensus_within_tolerance PASSED
+tests/direct/test_nexapact.py::test_validator_equivalence_failure_on_score_divergence PASSED
+tests/direct/test_nexapact.py::test_validator_equivalence_failure_on_defect_severity_mismatch PASSED
 
-============================== 5 passed in 0.03s ==============================
+============================== 8 passed in 0.05s ==============================
 ```
 
 ---
 
 ## 🌐 Interactive Web3 Frontend & Client SDK
 
-A drop-in, zero-dependency glassmorphism dashboard is included in `frontend/index.html`. It provides:
+A drop-in, zero-dependency glassmorphism dashboard is included in `index.html` (and `frontend/index.html`). It provides:
 - **Agreement Creator**: Lock GEN deposits and configure milestone specifications.
-- **Evidence Inspector**: Submit GitHub PR URLs and view simulated validator multi-axis consensus.
+- **Evidence Inspector**: Submit GitHub PR URLs and view multi-validator Equivalence Principle consensus.
 - **Agent Reputation Profile**: Track completed tasks and on-chain trust scores.
-- **Direct RPC Integration**: Connect to GenLayer Bradbury Testnet or Studionet.
+- **Direct RPC Integration**: Pre-configured for **GenLayer Studio Next (Chain ID: 61997)** by default, with support for Studionet (61999) and Bradbury Testnet (4221).
+- **Deployed Intelligent Contract Address**: `0xaC164931237F788A86Fad7712D5c900e00CF032A` (pre-filled on Studio Next).
 
 To run the local frontend:
 ```bash

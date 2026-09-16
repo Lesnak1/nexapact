@@ -474,7 +474,7 @@
             <div class="nav-controls">
                 <div class="network-badge" id="netBadge">
                     <div class="pulse-dot"></div>
-                    GenLayer Bradbury (4221)
+                    GenLayer Studio Next (61997)
                 </div>
                 <div class="status-pill status-approved" id="accountBadge" style="font-family: var(--font-mono); font-size: 11px;">
                     0x...
@@ -493,7 +493,8 @@
             <div class="form-group">
                 <label class="form-label">Network & RPC</label>
                 <select class="form-select" id="networkSelect">
-                    <option value="studionet" selected>GenLayer StudioNet (4222)</option>
+                    <option value="studioNext" selected>GenLayer Studio Next (61997)</option>
+                    <option value="studionet">GenLayer StudioNet (4222 / 61999)</option>
                     <option value="testnetBradbury">GenLayer Bradbury Testnet (4221)</option>
                     <option value="localnet">Local GenVM Node</option>
                 </select>
@@ -659,6 +660,23 @@
         import { createClient, createAccount, generatePrivateKey } from 'https://esm.sh/genlayer-js@1.2.0';
         import { testnetBradbury, studionet, localnet } from 'https://esm.sh/genlayer-js@1.2.0/chains';
 
+        const studioNext = {
+            ...studionet,
+            id: 61997,
+            name: 'GenLayer Studio Next (61997)',
+            rpcUrls: {
+                default: {
+                    http: ['https://rpc-studio-next.genlayer.com', 'https://studio-next.genlayer.com/api']
+                }
+            },
+            blockExplorers: {
+                default: {
+                    name: 'GenLayer Studio Next Explorer',
+                    url: 'https://explorer-studio-dev.genlayer.com'
+                }
+            }
+        };
+
         let client = null;
         let currentAccount = null;
 
@@ -674,6 +692,7 @@
 
         function getSelectedChain() {
             const val = document.getElementById('networkSelect').value;
+            if (val === 'studioNext') return studioNext;
             if (val === 'studionet') return studionet;
             if (val === 'localnet') return localnet;
             return testnetBradbury;
@@ -709,13 +728,39 @@
                     alert('MetaMask is not installed. You can continue using the auto-generated Web3 account or paste a private key.');
                     return;
                 }
+                const chain = getSelectedChain();
+                if (chain && chain.id) {
+                    const chainIdHex = '0x' + Number(chain.id).toString(16);
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: chainIdHex }],
+                        });
+                    } catch (switchErr) {
+                        if (switchErr.code === 4902 || switchErr?.data?.originalError?.code === 4902) {
+                            try {
+                                await window.ethereum.request({
+                                    method: 'wallet_addEthereumChain',
+                                    params: [{
+                                        chainId: chainIdHex,
+                                        chainName: chain.name,
+                                        rpcUrls: chain.rpcUrls?.default?.http || ['https://rpc-studio-next.genlayer.com'],
+                                        nativeCurrency: { name: 'GEN', symbol: 'GEN', decimals: 18 },
+                                        blockExplorerUrls: [chain.blockExplorers?.default?.url || 'https://explorer-studio-dev.genlayer.com']
+                                    }]
+                                });
+                            } catch (addErr) {
+                                addLog(`Note: Network switch prompt dismissed: ${addErr.message}`, 'warn');
+                            }
+                        }
+                    }
+                }
                 addLog('Requesting MetaMask accounts...', 'info');
                 const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
                 if (!accounts || accounts.length === 0) {
                     addLog('No account selected in MetaMask.', 'warn');
                     return;
                 }
-                const chain = getSelectedChain();
                 currentAccount = accounts[0];
                 client = createClient({
                     chain: chain,
@@ -940,7 +985,9 @@
         function updateTxDisplay(hash) {
             const shortHash = hash.slice(0, 10) + '...' + hash.slice(-8);
             const chain = getSelectedChain();
-            const explorerUrl = chain.blockExplorers?.default?.url ? `${chain.blockExplorers.default.url}tx/${hash}` : `https://explorer-bradbury.genlayer.com/tx/${hash}`;
+            const baseUrl = chain.blockExplorers?.default?.url || 'https://explorer-studio-dev.genlayer.com';
+            const cleanBase = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
+            const explorerUrl = `${cleanBase}tx/${hash}`;
             document.getElementById('dispLatestTx').innerHTML = `<a href="${explorerUrl}" target="_blank" style="color: var(--accent-cyan); text-decoration: none;">${shortHash} ↗</a>`;
         }
 
