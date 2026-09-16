@@ -1,4 +1,4 @@
-rpc_url: "https://rpc-studio-next.genlayer.com"
+rpc_url: "https://studio-next.genlayer.com/api"
 contract_path: "contracts/nexapact.py"
 class_name: "NexaPact"
 network: "studioNext"

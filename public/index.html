@@ -666,7 +666,7 @@
             name: 'GenLayer Studio Next (61997)',
             rpcUrls: {
                 default: {
-                    http: ['https://rpc-studio-next.genlayer.com', 'https://studio-next.genlayer.com/api']
+                    http: ['https://studio-next.genlayer.com/api', 'https://rpc-studio-next.genlayer.com']
                 }
             },
             blockExplorers: {
@@ -744,7 +744,7 @@
                                     params: [{
                                         chainId: chainIdHex,
                                         chainName: chain.name,
-                                        rpcUrls: chain.rpcUrls?.default?.http || ['https://rpc-studio-next.genlayer.com'],
+                                        rpcUrls: chain.rpcUrls?.default?.http || ['https://studio-next.genlayer.com/api'],
                                         nativeCurrency: { name: 'GEN', symbol: 'GEN', decimals: 18 },
                                         blockExplorerUrls: [chain.blockExplorers?.default?.url || 'https://explorer-studio-dev.genlayer.com']
                                     }]

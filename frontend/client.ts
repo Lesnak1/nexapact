@@ -51,7 +51,7 @@ export const studioNext = {
   name: 'GenLayer Studio Next (61997)',
   rpcUrls: {
     default: {
-      http: ['https://rpc-studio-next.genlayer.com', 'https://studio-next.genlayer.com/api'],
+      http: ['https://studio-next.genlayer.com/api', 'https://rpc-studio-next.genlayer.com'],
     },
   },
   blockExplorers: {
